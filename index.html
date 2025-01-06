@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <style>
+            .square {
+                border : 2px solid grey;
+                width: 60px;
+                height: 60px;
+                margin: 2px;
+                color: white;
+                font-size: 40px;
+                font-weight: bold;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            #game {
+                
+                width: 340px;;
+                display: flex;
+                flex-wrap: wrap;
+                margin: 0 auto;
+            }
+            .green {
+                background-color: green;
+            }
+            .yellow {
+                background-color: yellowgreen;
+            }
+            .red {
+                background-color: red;
+            }
+        </style>
+    </head>
+    <body style="background-color:rgb(12, 12, 12);">
+        <p
+            style="color: cornsilk; text-align: center; font-size: 80; margin-bottom: 40px;">
+            Wordle</p>
+        <p id="error" style="color: red; text-align: center;" ;> </p>
+        <div id="game">
+
+        </div>
+        <p id = "gameovermesssage" style="color: green; text-align: center; font-size: large;"></p>
+    </body>
+    <script>
+
+        let index = 0
+        let wordCount = 0
+        let gameOver = false
+        let testWord = "braid"
+        let error = document.getElementById("error")
+
+
+        function typingBox(){
+            var game = document.getElementById("game")
+            for(let i = 0; i < 30; i++){
+                let square = document.createElement("span")
+                square.classList.add("square")
+                square.id=i.toString()
+                square.innerText = ""
+                game.appendChild(square)
+            }
+        }
+
+        async function checkWord(word) {
+            try {
+                const response = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + word)
+                if (!response.ok) {
+                    error.innerText = "Couldn't Find The Word"
+                    return false
+                } else {
+                    const json = await response.json();
+                    return true
+                }
+            } catch (error) {
+                error.innerText = "An error occurred while checking the word."
+                console.error(error)
+                return false
+            }
+        }
+
+        function testGuess(word) {
+            let remainingLetters = testWord.split("");
+            for (let i = 0; i < 5; i++) {
+                const currentIndex = wordCount * 5 + i;
+                const square = document.getElementById(currentIndex);
+                const letter = word[i];
+
+                if (letter === testWord[i]) {
+                    square.classList.add("green");
+                    remainingLetters[i] = 0; 
+                } else if (remainingLetters.includes(letter)) {
+                    square.classList.add("yellow");
+                    remainingLetters[remainingLetters.indexOf(letter)] = 1; 
+                } else {
+                    square.classList.add("red");
+                }
+            }
+            let count = 0
+            for(let i = 0; i < 5; i++){
+                if (remainingLetters[i] == 0){
+                    count++
+                }
+            }
+            if (count == 5){
+                gameOver = true
+                let message = document.getElementById("gameovermesssage")
+                message.innerText = "Congratulations!"
+            }
+        }
+
+        document.onkeydown = function(event){
+            
+            if(!gameOver){
+
+                if(event.key.length === 1 && event.key.match(/[a-zA-Z]/) && index < 30 && index != 5 * (wordCount + 1)){
+                
+                    document.getElementById(index).innerText = event.key
+                    index++
+                    
+                }else if(event.keyCode == 8){
+    
+                    index = Math.max(index - 1, wordCount * 5)
+                    document.getElementById(index).innerText = ""
+                    
+                }else if (event.key == "Enter"){
+    
+                    if(index % 5 == 0 && index != 0){
+                        word = ""
+                        for (let i = wordCount * 5; i < index; i++){
+                            let element = document.getElementById(i)
+                            word += element.innerText    
+                        }
+                        checkWord(word).then(isValid => {
+                            if (isValid) {
+                                testGuess(word)
+                                error.innerText = ""
+                                wordCount++;
+                            }else{
+                                error.innerText = "Couldn't Find The Word"
+                            }
+                        });
+                        
+                        
+                    }else{
+                        error.innerText = "Not enough letters."
+                    }
+    
+                }
+            }
+            
+        } 
+
+        typingBox();
+    </script>
+</html>
