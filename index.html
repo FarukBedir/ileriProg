@@ -24,7 +24,7 @@
                 background-color: green;
             }
             .yellow {
-                background-color: yellowgreen;
+                background-color: goldenrod;
             }
             .red {
                 background-color: red;
@@ -39,14 +39,17 @@
         <div id="game">
 
         </div>
-        <p id = "gameovermesssage" style="color: green; text-align: center; font-size: large;"></p>
+        <p id="gameovermessage"
+            style="color: green; text-align: center; font-size: large;"></p>
     </body>
     <script>
+        let wordList = ["rogue", "stair","weird","bloom","crust","trail","loose","braid","joust","clear","beast","price"
+        ,"debut","layer","stuff","class","month","drink","fault","lucky","sport","novel","claim","vital","flash"]
 
         let index = 0
         let wordCount = 0
         let gameOver = false
-        let testWord = "braid"
+        let wordToGuess = wordList[Math.floor(Math.random()*wordList.length)]
         let error = document.getElementById("error")
 
 
@@ -73,19 +76,18 @@
                 }
             } catch (error) {
                 error.innerText = "An error occurred while checking the word."
-                console.error(error)
                 return false
             }
         }
 
         function testGuess(word) {
-            let remainingLetters = testWord.split("");
+            let remainingLetters = wordToGuess.split("");
             for (let i = 0; i < 5; i++) {
                 const currentIndex = wordCount * 5 + i;
                 const square = document.getElementById(currentIndex);
                 const letter = word[i];
 
-                if (letter === testWord[i]) {
+                if (letter === wordToGuess[i]) {
                     square.classList.add("green");
                     remainingLetters[i] = 0; 
                 } else if (remainingLetters.includes(letter)) {
@@ -103,7 +105,7 @@
             }
             if (count == 5){
                 gameOver = true
-                let message = document.getElementById("gameovermesssage")
+                let message = document.getElementById("gameovermessage")
                 message.innerText = "Congratulations!"
             }
         }
@@ -135,13 +137,18 @@
                                 testGuess(word)
                                 error.innerText = ""
                                 wordCount++;
+                                if(!gameOver && index == 30){
+                                    message = document.getElementById("gameovermessage")
+                                    message.innerText = "The word was: " + wordToGuess
+                                    message.style.color="red"
+                                }
                             }else{
                                 error.innerText = "Couldn't Find The Word"
                             }
                         });
                         
                         
-                    }else{
+                    } else{
                         error.innerText = "Not enough letters."
                     }
     
